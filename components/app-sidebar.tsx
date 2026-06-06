@@ -14,6 +14,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { TerminalSquareIcon, BookOpenIcon, Settings2Icon, PlusCircleIcon, ChartBarIcon, PlusSquareIcon } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 // This is sample data.
 
@@ -40,7 +41,7 @@ const data: { brand: SidebarItem['brand']; navMain: Omit<SidebarItem, 'brand'>[]
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/",
       icon: (
         <TerminalSquareIcon
         />
@@ -50,11 +51,12 @@ const data: { brand: SidebarItem['brand']; navMain: Omit<SidebarItem, 'brand'>[]
 
     {
       title: "New Entry",
-      url: "#",
+      url: "/new-entry",
       icon: (
         <PlusSquareIcon
         />
       ),
+      isActive: false,
     },
     {
       title: "Analytics",
@@ -63,6 +65,7 @@ const data: { brand: SidebarItem['brand']; navMain: Omit<SidebarItem, 'brand'>[]
         <ChartBarIcon
         />
       ),
+      isActive: false,
     },
   ],
 }
@@ -74,17 +77,26 @@ const user = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+  const pathName = usePathname();
+  
+  const dataWithActiveStates = data.navMain.map((item) => ({  
+    ...item,
+    isActive: item.url === pathName
+  }));
+
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.brand} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={dataWithActiveStates} />
       
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
+        <SidebarFooter>
+          <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

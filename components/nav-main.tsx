@@ -15,6 +15,8 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 
 
@@ -28,20 +30,30 @@ export function NavMain({
     isActive?: boolean
   }[]
 }) {
+
+  const router = useRouter();
+
+
+
+  
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-            <SidebarMenuItem key={item.title + item.url}>
-       
-                <SidebarMenuButton className={`${item.isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""} cursor-pointer`} tooltip={item.title}>
-                  {item.icon}
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
+          <Link key={item.title + item.url} href={item.url}>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                className={`${item.isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""} cursor-pointer`}
+                tooltip={item.title}
+              >
+                {item.icon}
+                <span>{item.title}</span>
+              </SidebarMenuButton>
             </SidebarMenuItem>
+          </Link>
         ))}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }

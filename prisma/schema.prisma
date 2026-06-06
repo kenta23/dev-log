@@ -22,6 +22,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  logs          Logs[]
 
   @@unique([email])
   @@map("user")
@@ -73,4 +74,25 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model Logs {
+  id         String     @id
+  title      String
+  notes      String
+  codes      String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  difficulty Difficulty
+  userId     String
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("logs")
 }
