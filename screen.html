@@ -1,0 +1,270 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Terminal Nocturne | Authentication</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Space+Grotesk:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#39393c",
+                    "on-primary-container": "#00422b",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#47464a",
+                    "tertiary": "#c8c6c9",
+                    "surface-container": "#201f22",
+                    "tertiary-fixed-dim": "#c8c6c9",
+                    "on-primary": "#003824",
+                    "on-surface-variant": "#bbcabf",
+                    "secondary-container": "#47464a",
+                    "inverse-on-surface": "#313032",
+                    "secondary-fixed": "#e4e1e6",
+                    "on-secondary-fixed-variant": "#47464a",
+                    "surface-variant": "#353437",
+                    "surface-container-low": "#1c1b1d",
+                    "secondary": "#c8c5ca",
+                    "primary": "#4edea3",
+                    "primary-container": "#10b981",
+                    "error": "#ffb4ab",
+                    "on-tertiary": "#303033",
+                    "surface-container-highest": "#353437",
+                    "inverse-surface": "#e5e1e4",
+                    "inverse-primary": "#006c49",
+                    "error-container": "#93000a",
+                    "on-secondary-fixed": "#1b1b1e",
+                    "tertiary-container": "#a4a2a6",
+                    "surface-tint": "#4edea3",
+                    "on-surface": "#e5e1e4",
+                    "secondary-fixed-dim": "#c8c5ca",
+                    "primary-fixed": "#6ffbbe",
+                    "outline": "#86948a",
+                    "on-primary-fixed-variant": "#005236",
+                    "on-background": "#e5e1e4",
+                    "on-primary-fixed": "#002113",
+                    "background": "#131315",
+                    "surface-dim": "#131315",
+                    "surface": "#131315",
+                    "on-tertiary-fixed": "#1b1b1e",
+                    "outline-variant": "#3c4a42",
+                    "on-secondary-container": "#b6b4b8",
+                    "primary-fixed-dim": "#4edea3",
+                    "tertiary-fixed": "#e4e1e5",
+                    "surface-container-lowest": "#0e0e10",
+                    "surface-container-high": "#2a2a2c",
+                    "on-secondary": "#303033",
+                    "on-error": "#690005",
+                    "surface-bright": "#39393b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin": "32px",
+                    "gutter": "16px",
+                    "8": "8px",
+                    "64": "64px",
+                    "16": "16px",
+                    "4": "4px",
+                    "32": "32px"
+            },
+            "fontFamily": {
+                    "mono-label": ["Space Grotesk"],
+                    "mono-code": ["Space Grotesk"],
+                    "h2": ["Inter"],
+                    "h1": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "mono-label": ["14px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "mono-code": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #09090b; /* Zinc-950 equivalent for base */
+            color: #e5e1e4;
+            overflow: hidden;
+        }
+
+        .terminal-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        }
+
+        .glow-border:focus-within {
+            border-color: #4edea3;
+            box-shadow: 0 0 10px rgba(78, 222, 163, 0.1);
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(0deg, rgba(78, 222, 163, 0) 0%, rgba(78, 222, 163, 0.03) 50%, rgba(78, 222, 163, 0) 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+
+        .blink {
+            animation: blinker 1.5s step-start infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md terminal-grid min-h-screen flex items-center justify-center relative">
+<!-- Atmospheric Layer -->
+<div class="scanline"></div>
+<!-- System Status Indicator (Top Right) -->
+<div class="absolute top-8 right-8 flex items-center gap-3">
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="font-mono-label text-mono-label text-on-surface-variant uppercase tracking-widest">System Active</span>
+</div>
+<!-- Main Auth Module -->
+<main class="w-full max-w-[440px] px-8 z-10">
+<!-- Logo Section -->
+<header class="mb-12 text-center">
+<h1 class="font-h1 text-h1 text-primary uppercase tracking-tighter mb-2">Terminal Nocturne</h1>
+<p class="font-mono-code text-mono-code text-on-surface-variant opacity-60">ENCRYPTED_ACCESS_PORTAL_V1.0.4</p>
+</header>
+<!-- Authentication Card -->
+<section class="bg-surface-container-low border border-outline-variant p-8 relative">
+<!-- Brutalist Decorative Corner Accents -->
+<div class="absolute -top-px -left-px w-4 h-4 border-t-2 border-l-2 border-primary"></div>
+<div class="absolute -bottom-px -right-px w-4 h-4 border-b-2 border-r-2 border-primary"></div>
+<div class="mb-8">
+<h2 class="font-mono-label text-mono-label text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+                    TERMINAL AUTHENTICATION
+                </h2>
+<div class="h-px w-full bg-outline-variant mt-4"></div>
+</div>
+<form action="#" class="space-y-6" id="loginForm">
+<!-- Username Field -->
+<div class="space-y-2 group">
+<label class="font-mono-code text-mono-code text-on-surface-variant group-focus-within:text-primary transition-colors" for="username">
+                        &gt; Root_User
+                    </label>
+<div class="relative flex items-center border border-outline-variant bg-background glow-border transition-all duration-200">
+<input class="w-full bg-transparent border-none focus:ring-0 text-on-surface font-mono-code px-4 py-3 placeholder:opacity-20" id="username" name="username" placeholder="username@node" required="" type="text">
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2 group">
+<label class="font-mono-code text-mono-code text-on-surface-variant group-focus-within:text-primary transition-colors" for="password">
+                        &gt; Access_Key
+                    </label>
+<div class="relative flex items-center border border-outline-variant bg-background glow-border transition-all duration-200">
+<input class="w-full bg-transparent border-none focus:ring-0 text-on-surface font-mono-code px-4 py-3 placeholder:opacity-20" id="password" name="password" placeholder="••••••••" required="" type="password">
+</div>
+</div>
+<!-- Sign In Button -->
+<button class="w-full bg-primary text-on-primary font-mono-label text-mono-label py-4 flex items-center justify-center gap-2 group active:scale-[0.98] transition-all duration-150 uppercase" type="submit">
+<span class="">SIGN_IN</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</form>
+<!-- Footer Actions -->
+<footer class="mt-8 pt-6 border-t border-outline-variant flex flex-col items-center gap-4">
+<a class="font-mono-code text-mono-code text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2 group" href="#">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+<span class="">Request Access</span>
+</a>
+<div class="flex items-center gap-4 opacity-40">
+<span class="h-1 w-1 rounded-full bg-on-surface"></span>
+<span class="h-1 w-1 rounded-full bg-on-surface"></span>
+<span class="h-1 w-1 rounded-full bg-on-surface"></span>
+</div>
+</footer>
+</section>
+<!-- Technical Metadata -->
+<div class="mt-12 space-y-2">
+
+<div class="h-[2px] bg-outline-variant w-full overflow-hidden">
+<div class="h-full bg-primary w-1/3 animate-[loading_4s_ease-in-out_infinite]"></div>
+</div>
+</div>
+</main>
+<!-- UI Background Art (Bento-style structural elements) -->
+<div class="absolute inset-0 pointer-events-none opacity-10">
+<div class="absolute top-32 left-32 w-64 h-64 border border-outline-variant"></div>
+<div class="absolute bottom-32 right-32 w-96 h-96 border border-outline-variant"></div>
+<div class="absolute top-1/2 left-20 -translate-y-1/2 w-px h-64 bg-outline-variant"></div>
+<div class="absolute top-1/2 right-20 -translate-y-1/2 w-px h-64 bg-outline-variant"></div>
+</div>
+<style>
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(300%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+<script>
+        // Micro-interaction for form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `
+                <span class="material-symbols-outlined animate-spin">refresh</span>
+                <span>AUTHENTICATING...</span>
+            `;
+
+            // Simulate server lag
+            setTimeout(() => {
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span>ACCESS GRANTED</span>
+                `;
+                btn.classList.replace('bg-primary', 'bg-green-600');
+                
+                setTimeout(() => {
+                    // Reset or Redirect logic here
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    btn.classList.replace('bg-green-600', 'bg-primary');
+                }, 2000);
+            }, 1500);
+        });
+
+        // Add subtle character typing effect to placeholder simulation if needed
+        const usernameInput = document.getElementById('username');
+        usernameInput.addEventListener('focus', () => {
+            console.log('System focus: Root_User port open');
+        });
+    </script>
+</body></html>

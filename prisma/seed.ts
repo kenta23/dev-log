@@ -1,0 +1,97 @@
+import { prisma } from "@/lib/prisma";
+
+async function main() {
+  await prisma.lang.createMany({
+    //data
+    /**type BundledLanguage = 'angular-html' | 'angular-ts' | 'astro' | 'bash' | 'blade' | 'c' | 'c++' | 'cjs' | 'coffee' | 'coffeescript' | 'cpp' | 'css' | 'csv' | 'cts' | 'glsl' | 'gql' | 'graphql' | 'haml' | 'handlebars' | 'hbs' | 'html' | 'html-derivative' | 'http' | 'hurl' | 'imba' | 'jade' | 'java' | 'javascript' | 'jinja' | 'jison' | 'jl' | 'js' | 'json' | 'json5' | 'jsonc' | 'jsonl' | 'jsx' | 'julia' | 'less' | 'lit' | 'markdown' | 'marko' | 'md' | 'mdc' | 'mdx' | 'mjs' | 'mts' | 'php' | 'postcss' | 'pug' | 'py' | 'python' | 'r' | 'regex' | 'regexp' | 'sass' | 'scss' | 'sh' | 'shell' | 'shellscript' | 'sql' | 'styl' | 'stylus' | 'svelte' | 'ts' | 'ts-tags' | 'tsx' | 'typescript' | 'vue' | 'vue-html' | 'vue-vine' | 'wasm' | 'wgsl' | 'wit' | 'xml' | 'yaml' | 'yml' | 'zsh'; */
+    data: [
+      { name: "angular-html" },
+      { name: "angular-ts" },
+      { name: "astro" },
+      { name: "bash" },
+      { name: "blade" },
+      { name: "c" },
+      { name: "c++" },
+      { name: "cjs" },
+      { name: "coffee" },
+      { name: "coffeescript" },
+      { name: "cpp" },
+      { name: "css" },
+      { name: "csv" },
+      { name: "cts" },
+      { name: "glsl" },
+      { name: "gql" },
+      { name: "graphql" },
+      { name: "haml" },
+      { name: "handlebars" },
+      { name: "hbs" },
+      { name: "html" },
+      { name: "html-derivative" },
+      { name: "http" },
+      { name: "hurl" },
+      { name: "imba" },
+      { name: "jade" },
+      { name: "java" },
+      { name: "javascript" },
+      { name: "jinja" },
+      { name: "jison" },
+      { name: "jl" },
+      { name: "js" },
+      { name: "json" },
+      { name: "json5" },
+      { name: "jsonc" },
+      { name: "jsonl" },
+      { name: "jsx" },
+      { name: "julia" },
+      { name: "less" },
+      { name: "lit" },
+      { name: "markdown" },
+      { name: "marko" },
+      { name: "md" },
+      { name: "mdc" },
+      { name: "mdx" },
+      { name: "mjs" },
+      { name: "mts" },
+      { name: "php" },
+      { name: "postcss" },
+      { name: "pug" },
+      { name: "py" },
+      { name: "python" },
+      { name: "r" },
+      { name: "regex" },
+      { name: "regexp" },
+      { name: "sass" },
+      { name: "scss" },
+      { name: "sh" },
+      { name: "shell" },
+      { name: "shellscript" },
+      { name: "sql" },
+      { name: "styl" },
+      { name: "stylus" },
+      { name: "svelte" },
+      { name: "ts" },
+      { name: "ts-tags" },
+      { name: "tsx" },
+      { name: "typescript" },
+      { name: "vue" },
+      { name: "vue-html" },
+      { name: "vue-vine" },
+      { name: "wasm" },
+      { name: "wgsl" },
+      { name: "wit" },
+      { name: "xml" },
+      { name: "yaml" },
+      { name: "yml" },
+      { name: "zsh" },
+    ],
+  });
+}
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

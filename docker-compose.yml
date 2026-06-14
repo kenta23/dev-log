@@ -12,7 +12,23 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql   # ✅ not /data
+      - postgres_data:/var/lib/postgresql # ✅ not /data
 
+  # Node.js service (use with: docker compose up nextjs-standalone --build)
+  nextjs-standalone:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dev-log-app
+    container_name: dev-log-app
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://root:1234@localhost:5432/dev-log?schema=public"
+      PORT: "3000"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      - db
 volumes:
   postgres_data:
