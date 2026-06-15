@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useActionState, useEffect } from "react";
+import { useState, useActionState, useEffect, startTransition } from "react";
 import Form from "next/form";
-import { createEntry, createNewEntry } from "@/actions/entries";
+import { createEntry } from "@/actions/entries";
 import { containerStyles, toggleStyles } from "@/lib/utils";
 import { Bug, Medal, SquareDashedBottomCode, X } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -23,7 +23,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLanguages } from "@/actions/data";
 
 interface Draft {
@@ -33,21 +33,30 @@ interface Draft {
 }
 [];
 
+const initialState = {
+  message: "",
+  error: undefined,
+};
+
 export default function NewEntryForm() {
   const [classificationSelected, setClassificationSelected] =
     useState<string>("");
   const [languageSelected, setLanguageSelected] =
     useState<BundledLanguage>("typescript");
   const [codeBlockText, setCodeBlockText] = useState<string>("");
-  const [state, formAction, isPending] = useActionState(createEntry, null);
+  const [state, formAction, isPending] = useActionState(
+    createEntry,
+    initialState,
+  );
   const [saveDraft, setSaveDraft] = useState<Draft>({
     title: null,
     logs: null,
     notes: null,
   });
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!state) {
+    if (!state?.message && !state?.error) {
       return;
     }
 
@@ -58,21 +67,24 @@ export default function NewEntryForm() {
         logs: "",
       });
 
+      //invalidate logs query
+      queryClient.invalidateQueries({
+        queryKey: ["logs"],
+        refetchType: "active",
+      });
+
+      setClassificationSelected("");
       setCodeBlockText("");
     }
-  }, [state]);
 
-  const {
-    data: progLangs,
-    isPending: isGettingProgLangs,
-    isError: isGettingProgLangsError,
-  } = useQuery({
-    queryKey: ["proglanguages"],
-    queryFn: async () => {
-      const data = await getLanguages();
-      return data;
-    },
-  });
+    const clearStateTimer = setTimeout(() => {
+      startTransition(() => {
+        formAction(null); // Pass null to trigger reset
+      });
+    }, 4000);
+
+    return () => clearTimeout(clearStateTimer);
+  }, [state, formAction, queryClient]);
 
   function handleDraftSaving() {
     const newDraft: Draft = {
@@ -262,7 +274,7 @@ export default function NewEntryForm() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {progLangs
+                      {/* {progLangs
                         ?.filter((l) =>
                           Object.keys(bundledLanguages).includes(l.name),
                         )
@@ -270,7 +282,13 @@ export default function NewEntryForm() {
                           <SelectItem key={l.id} value={l.id.toString()}>
                             {l.name}
                           </SelectItem>
-                        ))}
+                        ))} */}
+                      {Object.keys(bundledLanguages).map((l, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                        <SelectItem key={i} value={l}>
+                          {l}
+                        </SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -281,10 +299,7 @@ export default function NewEntryForm() {
                 placeholder="Enter Logs here...."
                 value={codeBlockText}
                 onChange={(val) => setCodeBlockText(val)}
-                lang={
-                  (progLangs?.find((l) => l.id.toString() === languageSelected)
-                    ?.name as BundledLanguage) || ("" as BundledLanguage)
-                }
+                lang={languageSelected}
               />
             </div>
           </div>
