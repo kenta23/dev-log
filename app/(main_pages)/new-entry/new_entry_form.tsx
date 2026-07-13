@@ -23,13 +23,14 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getLanguages } from "@/actions/data";
+import { toast } from "sonner";
 
 interface Draft {
-  title: string | null;
+  title: string;
   notes: string | null;
-  logs: string | null;
+  logs: string;
 }
 [];
 
@@ -38,53 +39,71 @@ const initialState = {
   error: undefined,
 };
 
+type formDataType = {
+  title: string;
+  classification: string;
+  language: string;
+  notes: string | null;
+  logs: string;
+};
+
 export default function NewEntryForm() {
   const [classificationSelected, setClassificationSelected] =
     useState<string>("");
   const [languageSelected, setLanguageSelected] =
     useState<BundledLanguage>("typescript");
   const [codeBlockText, setCodeBlockText] = useState<string>("");
-  const [state, formAction, isPending] = useActionState(
-    createEntry,
-    initialState,
-  );
+  // const [state, formAction, isPending] = useActionState(
+  //   createEntry,
+  //   initialState,
+  // );
+  const {
+    mutateAsync: addNewEntry,
+    data,
+    error,
+    isPending,
+    isSuccess,
+  } = useMutation({
+    mutationFn: async (data: formDataType) => await createEntry(data),
+  });
   const [saveDraft, setSaveDraft] = useState<Draft>({
-    title: null,
-    logs: null,
+    title: "",
+    logs: "",
     notes: null,
   });
+
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!state?.message && !state?.error) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!state?.message && !state?.error) {
+  //     return;
+  //   }
 
-    if (state?.message) {
-      setSaveDraft({
-        title: "",
-        notes: "",
-        logs: "",
-      });
+  //   if (state?.message) {
+  //     setSaveDraft({
+  //       title: "",
+  //       notes: "",
+  //       logs: "",
+  //     });
 
-      //invalidate logs query
-      queryClient.invalidateQueries({
-        queryKey: ["logs"],
-        refetchType: "active",
-      });
+  //     //invalidate logs query
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["logs"],
+  //       refetchType: "active",
+  //     });
 
-      setClassificationSelected("");
-      setCodeBlockText("");
-    }
+  //     setClassificationSelected("");
+  //     setCodeBlockText("");
+  //   }
 
-    const clearStateTimer = setTimeout(() => {
-      startTransition(() => {
-        formAction(null); // Pass null to trigger reset
-      });
-    }, 4000);
+  //   const clearStateTimer = setTimeout(() => {
+  //     startTransition(() => {
+  //       formAction(null); // Pass null to trigger reset
+  //     });
+  //   }, 4000);
 
-    return () => clearTimeout(clearStateTimer);
-  }, [state, formAction, queryClient]);
+  //   return () => clearTimeout(clearStateTimer);
+  // }, [state, formAction, queryClient]);
 
   function handleDraftSaving() {
     const newDraft: Draft = {
@@ -95,6 +114,35 @@ export default function NewEntryForm() {
 
     //TODO: DRAFT DATA TO SERVER FN
   }
+
+  function handlePublish() {
+    const data = {
+      title: saveDraft.title,
+      notes: saveDraft.notes,
+      logs: codeBlockText,
+      classification: classificationSelected,
+      language: languageSelected,
+    };
+
+    addNewEntry(data);
+
+    queryClient.invalidateQueries({
+      queryKey: ["logs"],
+      refetchType: "active",
+    });
+
+    toast.success("Entry created");
+
+    setSaveDraft({
+      title: "",
+      notes: "",
+      logs: "",
+    });
+
+    setClassificationSelected("");
+    setCodeBlockText("");
+  }
+
   return (
     <div className="px-8 w-full space-y-3 mb-6">
       <div className="flex w-full justify-between">
@@ -124,8 +172,8 @@ export default function NewEntryForm() {
           </button>
 
           <button
-            type="submit"
-            form="new-entry-form"
+            type="button"
+            onClick={handlePublish}
             disabled={isPending}
             className="bg-primary text-black cursor-pointer font-medium px-4 text-nowrap py-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -134,26 +182,26 @@ export default function NewEntryForm() {
         </div>
       </div>
 
-      {state?.message && (
+      {data?.message && (
         <Alert
           className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/50 text-emerald-500 rounded-md text-sm font-mono"
           variant={"default"}
         >
           <AlertTitle>Successful</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
+          <AlertDescription>{data.message}</AlertDescription>
         </Alert>
       )}
-      {state?.error && (
+      {data?.error && (
         <Alert
           className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-500 rounded-md text-sm font-mono"
           variant={"destructive"}
         >
           <AlertTitle>Failed</AlertTitle>
-          <AlertDescription>{state.error}</AlertDescription>
+          <AlertDescription>{data.error}</AlertDescription>
         </Alert>
       )}
 
-      <Form action={formAction} id="new-entry-form">
+      <div>
         <main className="space-y-8">
           <input
             type="hidden"
@@ -274,15 +322,6 @@ export default function NewEntryForm() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {/* {progLangs
-                        ?.filter((l) =>
-                          Object.keys(bundledLanguages).includes(l.name),
-                        )
-                        .map((l) => (
-                          <SelectItem key={l.id} value={l.id.toString()}>
-                            {l.name}
-                          </SelectItem>
-                        ))} */}
                       {Object.keys(bundledLanguages).map((l, i) => (
                         // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                         <SelectItem key={i} value={l}>
@@ -325,7 +364,7 @@ export default function NewEntryForm() {
             </ul>
           </div>
         </main>
-      </Form>
+      </div>
     </div>
   );
 }

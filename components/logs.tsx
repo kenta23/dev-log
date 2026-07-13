@@ -2,18 +2,36 @@
 
 import { useEffect, useState } from "react";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { createHighlighter } from "shiki";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllLogs } from "@/actions/data";
+import { Trash } from "lucide-react";
+import { deleteLog } from "@/actions/entries";
+import { toast } from "sonner";
 
 export default function Logs() {
-  const [tokens, setTokens] = useState<string>("");
+  const queryClient = useQueryClient();
   const { data, isPending, isError } = useQuery({
     queryKey: ["logs"],
     queryFn: () => getAllLogs(),
   });
+  const { mutateAsync } = useMutation({
+    mutationFn: (id: number) => deleteLog(id),
+  });
   const [showMore, setShowMore] = useState<Record<string, boolean>>({});
+
+  async function deleteLogFn(id: number) {
+    try {
+      await mutateAsync(id);
+      toast.success("Log deleted successfully");
+
+      queryClient.invalidateQueries({
+        queryKey: ["logs"],
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete log");
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -45,7 +63,18 @@ export default function Logs() {
                     </div>
                   </div>
 
-                  <h3 className="text-[2.7rem] font-regular">{item.title}</h3>
+                  <div className="flex w-full justify-between items-center">
+                    <h3 className="text-[2.7rem] font-regular">{item.title}</h3>
+                    <div className="w-full flex items-center justify-end w-4">
+                      <button
+                        type="button"
+                        onClick={() => deleteLogFn(item.id)}
+                        className="p-1 cursor-pointer"
+                      >
+                        <Trash size={18} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex relative items-start flex-col justify-center gap-2 w-full">

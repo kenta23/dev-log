@@ -2,6 +2,7 @@
 
 import { ActivityCalendar, ThemeInput } from "react-activity-calendar";
 import { useQuery } from "@tanstack/react-query";
+import { contributionsData } from "@/actions/data";
 
 // const customTheme = createTheme({
 //   level0: "#27272a", // bg-muted
@@ -17,43 +18,14 @@ const explicitTheme: ThemeInput = {
 };
 
 export default function Contributions() {
-  const data = [
-    {
-      date: "2024-06-23",
-      count: 2,
-      level: 1,
-    },
-    {
-      date: "2024-08-02",
-      count: 16,
-      level: 4,
-    },
-    {
-      date: "2024-11-29",
-      count: 11,
-      level: 3,
-    },
-    {
-      date: "2025-11-29",
-      count: 2,
-      level: 1,
-    },
-    {
-      date: "2025-11-29",
-      count: 4,
-      level: 2,
-    },
-    {
-      date: "2025-03-29",
-      count: 6,
-      level: 3,
-    },
-    {
-      date: "2025-04-29",
-      count: 8,
-      level: 4,
-    },
-  ];
+  const { data, isLoading, isSuccess, isError } = useQuery({
+    queryFn: async () => await contributionsData(),
+    queryKey: ["contribution"],
+    gcTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, //5 minutes
+  });
+
+  if (isLoading || !data) return null;
 
   return (
     <div className="bg-muted/50 border rounded-xl p-8 mb-12">

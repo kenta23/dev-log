@@ -1,0 +1,493 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ffb4ab",
+                    "secondary-container": "#47464a",
+                    "secondary": "#c8c5ca",
+                    "on-surface-variant": "#bbcabf",
+                    "on-tertiary-fixed-variant": "#47464a",
+                    "on-error": "#690005",
+                    "surface-container-low": "#1c1b1d",
+                    "on-primary-fixed": "#002113",
+                    "on-background": "#e5e1e4",
+                    "surface-container-highest": "#353437",
+                    "on-surface": "#e5e1e4",
+                    "on-primary-fixed-variant": "#005236",
+                    "outline": "#86948a",
+                    "on-secondary-fixed": "#1b1b1e",
+                    "on-primary": "#003824",
+                    "on-secondary-container": "#b6b4b8",
+                    "surface-tint": "#4edea3",
+                    "surface-bright": "#39393b",
+                    "primary": "#4edea3",
+                    "background": "#131315",
+                    "on-primary-container": "#00422b",
+                    "tertiary": "#c8c6c9",
+                    "secondary-fixed-dim": "#c8c5ca",
+                    "on-tertiary-fixed": "#1b1b1e",
+                    "on-tertiary": "#303033",
+                    "tertiary-fixed": "#e4e1e5",
+                    "tertiary-container": "#a4a2a6",
+                    "on-secondary": "#303033",
+                    "inverse-on-surface": "#313032",
+                    "surface-dim": "#131315",
+                    "inverse-surface": "#e5e1e4",
+                    "on-tertiary-container": "#39393c",
+                    "surface-container": "#201f22",
+                    "on-secondary-fixed-variant": "#47464a",
+                    "tertiary-fixed-dim": "#c8c6c9",
+                    "surface-container-lowest": "#0e0e10",
+                    "surface": "#131315",
+                    "on-error-container": "#ffdad6",
+                    "primary-container": "#10b981",
+                    "outline-variant": "#3c4a42",
+                    "secondary-fixed": "#e4e1e6",
+                    "surface-variant": "#353437",
+                    "primary-fixed": "#6ffbbe",
+                    "surface-container-high": "#2a2a2c",
+                    "error-container": "#93000a",
+                    "primary-fixed-dim": "#4edea3",
+                    "inverse-primary": "#006c49"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin": "32px",
+                    "64": "64px",
+                    "4": "4px",
+                    "32": "32px",
+                    "gutter": "16px",
+                    "8": "8px",
+                    "16": "16px"
+            },
+            "fontFamily": {
+                    "h1": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "mono-label": ["Space Grotesk"],
+                    "h2": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "mono-code": ["Space Grotesk"]
+            },
+            "fontSize": {
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "mono-label": ["14px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "mono-code": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .heat-map-grid {
+            display: grid;
+            grid-template-columns: repeat(52, 1fr);
+            gap: 2px;
+        }
+        .heat-cell {
+            aspect-ratio: 1;
+            border-radius: 1px;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-on-surface font-body-md selection:bg-primary selection:text-zinc-950">
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-zinc-950 border-b border-zinc-800">
+<div class="text-xl font-bold tracking-tighter text-emerald-500 uppercase">Terminal Nocturne</div>
+<nav class="hidden md:flex items-center space-x-8 font-inter tracking-tight">
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors duration-200 ease-in-out" href="#">Logs</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors duration-200 ease-in-out" href="#">Snippets</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors duration-200 ease-in-out" href="#">Bugs</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors duration-200 ease-in-out" href="#">Wins</a>
+</nav>
+<div class="flex items-center space-x-4">
+<button class="text-zinc-400 hover:text-zinc-100 material-symbols-outlined">settings</button>
+<button class="text-zinc-400 hover:text-zinc-100 material-symbols-outlined">account_circle</button>
+</div>
+</header>
+<aside class="hidden md:flex flex-col w-64 fixed left-0 top-0 h-full py-8 bg-zinc-950 border-r border-zinc-800 z-40 mt-16">
+<div class="px-6 mb-8">
+<div class="text-emerald-500 font-black font-inter text-sm">Dev_Session</div>
+<div class="text-zinc-500 text-xs mt-1">v1.0.4-stable</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-zinc-500 hover:bg-zinc-900/50 transition-all duration-150 font-inter text-sm" href="#">
+<span class="material-symbols-outlined mr-3">terminal</span>
+                Dashboard
+            </a>
+<a class="flex items-center px-6 py-3 text-zinc-500 hover:bg-zinc-900/50 transition-all duration-150 font-inter text-sm" href="#">
+<span class="material-symbols-outlined mr-3">add_box</span>
+                New Entry
+            </a>
+<a class="flex items-center px-6 py-3 text-zinc-500 hover:bg-zinc-900/50 transition-all duration-150 font-inter text-sm" href="#">
+<span class="material-symbols-outlined mr-3">search</span>
+                Search
+            </a>
+<a class="flex items-center px-6 py-3 bg-zinc-900 text-emerald-500 border-l-4 border-emerald-500 transition-all duration-150 font-inter text-sm" href="#">
+<span class="material-symbols-outlined mr-3">monitoring</span>
+                Analytics
+            </a>
+<a class="flex items-center px-6 py-3 text-zinc-500 hover:bg-zinc-900/50 transition-all duration-150 font-inter text-sm" href="#">
+<span class="material-symbols-outlined mr-3">inventory_2</span>
+                Archive
+            </a>
+</nav>
+<div class="px-6 mt-auto">
+<button class="w-full py-3 bg-primary text-zinc-950 font-bold rounded-lg hover:brightness-110 transition-all">
+                Create Log
+            </button>
+</div>
+</aside>
+<main class="md:ml-64 pt-24 px-6 md:px-12 pb-32 max-w-7xl">
+<div class="mb-12">
+<h1 class="font-h1 text-h1 text-on-surface">Analytics &amp; Insights</h1>
+<p class="text-zinc-500 mt-2 font-mono-label">SESSION_LOG_QUERY: ALL_PERIODS_ACTIVE</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<div class="bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between">
+<div>
+<span class="text-zinc-500 font-mono-label block mb-4">TOTAL_WINS</span>
+<h2 class="text-6xl font-black text-emerald-500 tracking-tighter">142</h2>
+</div>
+<div class="mt-4 flex items-center text-emerald-500/70 text-sm">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+                    +12% from last cycle
+                </div>
+</div>
+<div class="bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between">
+<div>
+<span class="text-zinc-500 font-mono-label block mb-4">BUGS_FIXED</span>
+<h2 class="text-6xl font-black text-on-surface tracking-tighter">89</h2>
+</div>
+<div class="mt-4 flex items-center text-zinc-500 text-sm">
+<span class="material-symbols-outlined text-sm mr-1">check_circle</span>
+                    Velocity: 2.4/day
+                </div>
+</div>
+<div class="bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between">
+<div>
+<span class="text-zinc-500 font-mono-label block mb-4">UPTIME_INDEX</span>
+<h2 class="text-6xl font-black text-primary/40 tracking-tighter">99.8%</h2>
+</div>
+<div class="mt-4 flex items-center text-emerald-500 text-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                    Operational
+                </div>
+</div>
+</div>
+<div class="bg-zinc-900 border border-zinc-800 p-8 mb-12">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-mono-label text-zinc-400">CONTRIBUTION_ACTIVITY_MAP</h3>
+<div class="flex items-center gap-2 text-xs text-zinc-500">
+<span>Less</span>
+<div class="w-3 h-3 bg-zinc-800 rounded-sm"></div>
+<div class="w-3 h-3 bg-emerald-900 rounded-sm"></div>
+<div class="w-3 h-3 bg-emerald-700 rounded-sm"></div>
+<div class="w-3 h-3 bg-emerald-500 rounded-sm"></div>
+<span>More</span>
+</div>
+</div>
+<div class="overflow-x-auto pb-4">
+<div class="heat-map-grid min-w-[800px]">
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-emerald-900/40"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-700"></div>
+<div class="heat-cell bg-emerald-900"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-zinc-800"></div>
+<div class="heat-cell bg-emerald-500"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2 bg-zinc-900 border border-zinc-800 p-6">
+<h3 class="font-mono-label text-zinc-400 mb-6">MOST_USED_TAGS</h3>
+<div class="space-y-4">
+<div class="flex items-center">
+<div class="w-24 font-mono-code text-zinc-300">rust_lang</div>
+<div class="flex-1 h-2 bg-zinc-800 mx-4 overflow-hidden rounded-full">
+<div class="h-full bg-emerald-500" style="width: 85%"></div>
+</div>
+<div class="w-12 text-right font-mono-code text-zinc-500 text-xs">85%</div>
+</div>
+<div class="flex items-center">
+<div class="w-24 font-mono-code text-zinc-300">postgres</div>
+<div class="flex-1 h-2 bg-zinc-800 mx-4 overflow-hidden rounded-full">
+<div class="h-full bg-emerald-500" style="width: 62%"></div>
+</div>
+<div class="w-12 text-right font-mono-code text-zinc-500 text-xs">62%</div>
+</div>
+<div class="flex items-center">
+<div class="w-24 font-mono-code text-zinc-300">api_core</div>
+<div class="flex-1 h-2 bg-zinc-800 mx-4 overflow-hidden rounded-full">
+<div class="h-full bg-emerald-500" style="width: 45%"></div>
+</div>
+<div class="w-12 text-right font-mono-code text-zinc-500 text-xs">45%</div>
+</div>
+<div class="flex items-center">
+<div class="w-24 font-mono-code text-zinc-300">security</div>
+<div class="flex-1 h-2 bg-zinc-800 mx-4 overflow-hidden rounded-full">
+<div class="h-full bg-emerald-500" style="width: 38%"></div>
+</div>
+<div class="w-12 text-right font-mono-code text-zinc-500 text-xs">38%</div>
+</div>
+<div class="flex items-center">
+<div class="w-24 font-mono-code text-zinc-300">ui_v2</div>
+<div class="flex-1 h-2 bg-zinc-800 mx-4 overflow-hidden rounded-full">
+<div class="h-full bg-emerald-500" style="width: 20%"></div>
+</div>
+<div class="w-12 text-right font-mono-code text-zinc-500 text-xs">20%</div>
+</div>
+</div>
+</div>
+<div class="bg-zinc-900 border border-zinc-800 p-6">
+<h3 class="font-mono-label text-zinc-400 mb-6">RECENT_MILESTONES</h3>
+<div class="space-y-6">
+<div class="border-l-2 border-emerald-500 pl-4 py-1">
+<div class="text-emerald-500 font-bold text-sm">System Optimization</div>
+<div class="text-zinc-500 text-xs mt-1">Memory usage reduced by 40MB</div>
+<div class="text-zinc-600 text-[10px] mt-1 uppercase">02_JAN_2024</div>
+</div>
+<div class="border-l-2 border-zinc-700 pl-4 py-1">
+<div class="text-zinc-300 font-bold text-sm">Auth Module Rewrite</div>
+<div class="text-zinc-500 text-xs mt-1">Migrated to Argon2id hashing</div>
+<div class="text-zinc-600 text-[10px] mt-1 uppercase">28_DEC_2023</div>
+</div>
+<div class="border-l-2 border-zinc-700 pl-4 py-1">
+<div class="text-zinc-300 font-bold text-sm">Bug Cleanse</div>
+<div class="text-zinc-500 text-xs mt-1">Closed 15 legacy tickets</div>
+<div class="text-zinc-600 text-[10px] mt-1 uppercase">20_DEC_2023</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-4 bg-zinc-950 border-t border-zinc-800">
+<button class="flex flex-col items-center justify-center text-zinc-500 active:bg-zinc-900 scale-95 duration-100">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] uppercase font-bold mt-1">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-zinc-500 active:bg-zinc-900 scale-95 duration-100">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="text-[10px] uppercase font-bold mt-1">New</span>
+</button>
+<button class="flex flex-col items-center justify-center text-zinc-500 active:bg-zinc-900 scale-95 duration-100">
+<span class="material-symbols-outlined">search</span>
+<span class="text-[10px] uppercase font-bold mt-1">Search</span>
+</button>
+<button class="flex flex-col items-center justify-center text-emerald-500 active:bg-zinc-900 scale-95 duration-100">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] uppercase font-bold mt-1">Profile</span>
+</button>
+</nav>
+</body></html>

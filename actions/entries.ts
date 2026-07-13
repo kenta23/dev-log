@@ -14,26 +14,29 @@ type dataCreateEntry = {
   logs: string;
 };
 
-export async function createEntry(
-  prevState: unknown,
-  formData: FormData | null,
-) {
-  if (!formData) {
+export async function createEntry(data: {
+  title: string;
+  classification: string;
+  language: string;
+  notes: string | null;
+  logs: string;
+}) {
+  if (!data) {
     return { message: "", error: undefined };
   }
 
-  const title = formData.get("title");
-  const classification = formData.get("classification");
-  const language = formData.get("language");
-  const notes = formData.get("notes");
-  const content = formData.get("content");
+  const title = data.title;
+  const classification = data.classification;
+  const language = data.language;
+  const notes = data.notes;
+  const logs = data.logs;
 
   console.log("data", {
     title,
     classification,
     language,
     notes,
-    content,
+    logs,
   });
 
   //session checker
@@ -45,10 +48,10 @@ export async function createEntry(
     return { error: "User not found" };
   }
 
-  if (!title || !classification || !notes || !content) {
+  if (!title || !classification || !logs) {
     return {
       error:
-        "Missing required fields. Please ensure title, classification, and content are provided.",
+        "Missing required fields. Please ensure title, classification, and logs are provided.",
     };
   }
 
@@ -57,8 +60,8 @@ export async function createEntry(
     title: z.string().min(1, "Title is required"),
     classification: z.string().min(1, "Classification is required"),
     language: z.string().min(1, "Language is required"),
-    notes: z.string().min(1, "Notes is required"),
-    content: z.string().min(1, "Content is required"),
+    notes: z.string().nullable(),
+    logs: z.string().min(1, "Logs is required"),
   });
 
   const result = validateData.safeParse({
@@ -66,7 +69,7 @@ export async function createEntry(
     classification,
     language,
     notes,
-    content,
+    logs,
   });
 
   if (!result.success) {
@@ -79,8 +82,8 @@ export async function createEntry(
     const logs = await prisma.logs.create({
       data: {
         title: result.data.title,
-        notes: result.data.notes,
-        codes: result.data.content,
+        notes: result.data.notes || "",
+        codes: result.data.logs,
         user: {
           connect: {
             id: session.user.id,
@@ -106,9 +109,30 @@ export async function createEntry(
     return { error: "Classification or Language not found." };
   }
 
-  //invalidate data from the dashboard
-
-  revalidatePath("/");
-
   return { message: "Entry successfully created!" };
+}
+
+export async function deleteLog(id: number) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    return { error: "User not found" };
+  }
+
+  if (!id) {
+    return { error: "Invalid ID" };
+  }
+
+  try {
+    const log = await prisma.logs.delete({
+      where: {
+        id: id,
+      },
+    });
+    console.log("LOGS", log);
+  } catch (error) {
+    return { error: "Failed to delete log" };
+  }
 }
