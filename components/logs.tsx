@@ -4,9 +4,22 @@ import { useEffect, useState } from "react";
 import { Badge } from "./ui/badge";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllLogs } from "@/actions/data";
-import { Trash } from "lucide-react";
+import { Pencil, Trash } from "lucide-react";
 import { deleteLog } from "@/actions/entries";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import Link from "next/link";
+import { devicons } from "@/lib/devicons";
 
 export default function Logs() {
   const queryClient = useQueryClient();
@@ -21,9 +34,11 @@ export default function Logs() {
 
   async function deleteLogFn(id: number) {
     try {
-      await mutateAsync(id);
-      toast.success("Log deleted successfully");
-
+      toast.promise(mutateAsync(id), {
+        loading: "Deleting log...",
+        success: "Log deleted successfully",
+        error: "Failed to delete log",
+      });
       queryClient.invalidateQueries({
         queryKey: ["logs"],
       });
@@ -36,7 +51,7 @@ export default function Logs() {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {data?.map((item) => (
             <div
               key={item.id}
@@ -63,16 +78,52 @@ export default function Logs() {
                     </div>
                   </div>
 
+                  <div className="flex gap-2 mt-2 items-center w-full">
+                    <i className={devicons[item.language.name]}></i>
+                    <p className="font-medium text-sm capitalize">
+                      {item.language.name}
+                    </p>
+                  </div>
+
                   <div className="flex w-full justify-between items-center">
                     <h3 className="text-[2.7rem] font-regular">{item.title}</h3>
-                    <div className="w-full flex items-center justify-end w-4">
-                      <button
-                        type="button"
-                        onClick={() => deleteLogFn(item.id)}
-                        className="p-1 cursor-pointer"
-                      >
-                        <Trash size={18} />
-                      </button>
+
+                    <div className="flex items-center justify-end w-auto">
+                      <Link href={`edit-entry/${item.id}`}>
+                        <Pencil
+                          size={18}
+                          className="text-primary cursor-pointer"
+                        />
+                      </Link>
+
+                      <AlertDialog>
+                        <AlertDialogTrigger
+                          type="button"
+                          className="p-1 cursor-pointer text-red-500"
+                        >
+                          <Trash size={18} />
+                        </AlertDialogTrigger>
+
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Are you absolutely sure?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will
+                              permanently delete your "{item.title}" entry.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteLogFn(item.id)}
+                            >
+                              Continue
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>

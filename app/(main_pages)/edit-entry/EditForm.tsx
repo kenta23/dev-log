@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useActionState, useEffect, startTransition } from "react";
+import { useEffect, useState } from "react";
 import Form from "next/form";
-import { createEntry } from "@/actions/entries";
+import {
+  createEntry,
+  editNewEntry as editEntryAction,
+} from "@/actions/entries";
 import { containerStyles, toggleStyles } from "@/lib/utils";
 import { Bug, Medal, SquareDashedBottomCode, X } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -24,15 +27,14 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getLanguages } from "@/actions/data";
 import { toast } from "sonner";
+import { getLogById } from "@/actions/data";
 
 interface Draft {
   title: string;
   notes: string | null;
   logs: string;
 }
-[];
 
 const initialState = {
   message: "",
@@ -47,7 +49,7 @@ type formDataType = {
   logs: string;
 };
 
-export default function NewEntryForm() {
+export default function EditForm({ id }: { id: string }) {
   const [classificationSelected, setClassificationSelected] =
     useState<string>("");
   const [languageSelected, setLanguageSelected] =
@@ -55,15 +57,40 @@ export default function NewEntryForm() {
   const [codeBlockText, setCodeBlockText] = useState<string>("");
 
   const {
-    mutateAsync: addNewEntry,
+    data: logsData,
+    isError,
+    isPending: fetchingLogs,
+  } = useQuery({
+    queryKey: ["logs", id],
+    queryFn: () => getLogById(Number(id)),
+  });
+
+  useEffect(() => {
+    if (isError) {
+      toast.error("Failed to fetch logs");
+    }
+  }, [isError]);
+
+  useEffect(() => {
+    if (logsData) {
+      setClassificationSelected(String(logsData.classification.id));
+      setLanguageSelected(
+        logsData.language.name.toLowerCase() as BundledLanguage,
+      );
+      setCodeBlockText(logsData.codes);
+    }
+  }, [logsData]);
+
+  const {
+    mutateAsync: updateEntry,
     data,
     error,
     isPending,
     isSuccess,
   } = useMutation({
-    mutationFn: async (data: formDataType) => await createEntry(data),
+    mutationFn: (data: formDataType) => editEntryAction(Number(id), data),
     onSuccess: (data) => {
-      if (data.message) {
+      if (!data?.error) {
         setSaveDraft({ title: "", notes: "", logs: "" });
         setClassificationSelected("");
         setCodeBlockText("");
@@ -87,7 +114,6 @@ export default function NewEntryForm() {
 
     //TODO: DRAFT DATA TO SERVER FN
   }
-
   async function handlePublish() {
     const data = {
       title: saveDraft.title,
@@ -97,7 +123,7 @@ export default function NewEntryForm() {
       language: languageSelected,
     };
 
-    const addNewEntryPromise = addNewEntry(data);
+    const addNewEntryPromise = updateEntry(data);
     toast.promise(addNewEntryPromise, {
       loading: "Publishing entry...",
       success: "Entry published successfully!",
@@ -119,7 +145,7 @@ export default function NewEntryForm() {
       <div className="flex w-full justify-between">
         <div className="flex items-start justify-between w-full flex-col">
           <h1 className="text-2xl font-semibold font-display uppercase">
-            New Entry
+            Edit Entry
           </h1>
           <p className="text-muted-foreground font-display font-medium">
             <span className="uppercase">
@@ -176,6 +202,7 @@ export default function NewEntryForm() {
                 className="w-full bg-zinc-950 border border-zinc-800 focus:border-emerald-500 focus:ring-0 text-foreground py-3 px-4 placeholder:text-muted transition-all outline-none"
                 placeholder="Specify clear, descriptive intent..."
                 type="text"
+                value={logsData?.title || ""}
                 onChange={(e) =>
                   setSaveDraft({ ...saveDraft, title: e.target.value })
                 }
@@ -195,6 +222,7 @@ export default function NewEntryForm() {
                 placeholder="Specify clear, descriptive intent..."
                 rows={4}
                 aria-label="Notes"
+                value={logsData?.notes || ""}
                 onChange={(e) =>
                   setSaveDraft({ ...saveDraft, notes: e.target.value })
                 }
@@ -217,6 +245,7 @@ export default function NewEntryForm() {
               <div className="flex w-full gap-2 items-center">
                 <ToggleGroup
                   onValueChange={setClassificationSelected}
+                  value={classificationSelected}
                   variant={"default"}
                   type="single"
                   className="w-full flex flex-wrap"
@@ -269,7 +298,7 @@ export default function NewEntryForm() {
                   }
                   value={languageSelected}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-45">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent>

@@ -30,7 +30,7 @@ async function getCodeTokens(lang: string, code: string) {
 
   const tokens = highlighter.codeToHtml(code, {
     theme: "github-dark",
-    lang: lang,
+    lang,
   });
 
   return tokens;
@@ -197,6 +197,46 @@ export async function contributionsData() {
       level: getLevel(count),
     }))
     .sort((a, b) => a.date.localeCompare(b.date));
+
+  return data;
+}
+
+export async function getLogById(id: number) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    redirect("/login");
+  }
+
+  if (!id) {
+    throw new Error("Log not found");
+  }
+
+  const data = await prisma.logs.findFirst({
+    where: {
+      id,
+      userId: session?.user.id,
+    },
+    include: {
+      classification: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      language: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (!data) {
+    throw new Error("Log not found");
+  }
 
   return data;
 }

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "tanstack-query": {
+      "source": "mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "tanstack-query/SKILL.md",
+      "computedHash": "5ba70383d15f76e70911b142b1eb64fe4cb5c951cc504e53e47f55ca6d48724e"
+    }
+  }
+}

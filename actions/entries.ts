@@ -10,7 +10,7 @@ type dataCreateEntry = {
   title: string;
   classification: string;
   language: string;
-  notes: string;
+  notes: string | null;
   logs: string;
 };
 
@@ -110,6 +110,74 @@ export async function createEntry(data: {
   }
 
   return { message: "Entry successfully created!" };
+}
+
+export async function editNewEntry(id: number, data: dataCreateEntry) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const title = data.title;
+  const classification = data.classification;
+  const language = data.language;
+  const notes = data.notes;
+  const logs = data.logs;
+
+  if (!session?.user) {
+    return { error: "User not found" };
+  }
+
+  if (!id) {
+    return { error: "Invalid ID" };
+  }
+
+  const validateData = z.object({
+    title: z.string().min(1, "Title is required"),
+    classification: z.string().min(1, "Classification is required"),
+    language: z.string().min(1, "Language is required"),
+    notes: z.string().nullable(),
+    logs: z.string().min(1, "Logs is required"),
+  });
+
+  const result = validateData.safeParse({
+    title,
+    classification,
+    language,
+    notes,
+    logs,
+  });
+
+  if (!result.success) {
+    return {
+      error: result.error.issues[0].message,
+    };
+  }
+
+  try {
+    const log = await prisma.logs.update({
+      where: {
+        id: id,
+      },
+      data: {
+        title: result.data.title,
+        notes: result.data.notes || "",
+        codes: result.data.logs,
+        classification: {
+          connect: {
+            id: parseInt(result.data.classification, 10),
+          },
+        },
+        language: {
+          connect: {
+            name: result.data.language,
+          },
+        },
+      },
+    });
+    console.log("UPDATED LOG", log);
+  } catch (error) {
+    return { error: "Failed to edit log" };
+  }
 }
 
 export async function deleteLog(id: number) {
