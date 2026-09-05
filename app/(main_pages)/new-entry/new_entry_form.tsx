@@ -17,15 +17,9 @@ import {
 } from "@/components/ui/select";
 import { bundledLanguages } from "shiki/bundle/web";
 import type { BundledLanguage } from "shiki/bundle/web";
-import {
-  Alert,
-  AlertAction,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getLanguages } from "@/actions/data";
 import { toast } from "sonner";
+import { useParams } from "next/navigation";
 
 interface Draft {
   title: string;
@@ -45,9 +39,14 @@ type formDataType = {
   language: string;
   notes: string | null;
   logs: string;
+  collectionId?: string;
 };
 
-export default function NewEntryForm() {
+export default function NewEntryForm({
+  collectionId,
+}: {
+  collectionId?: string;
+}) {
   const [classificationSelected, setClassificationSelected] =
     useState<string>("");
   const [languageSelected, setLanguageSelected] =
@@ -61,13 +60,35 @@ export default function NewEntryForm() {
     isPending,
     isSuccess,
   } = useMutation({
-    mutationFn: async (data: formDataType) => await createEntry(data),
+    mutationFn: async (data: formDataType) => {
+      const res = await createEntry({ collectionId, ...data });
+      if (res.error) throw new Error(res.error);
+      return res;
+    },
     onSuccess: (data) => {
-      if (data.message) {
-        setSaveDraft({ title: "", notes: "", logs: "" });
-        setClassificationSelected("");
-        setCodeBlockText("");
-      }
+      toast.success(data.message ?? "Entry published!", {
+        description: "Entry published successfully!",
+      });
+      setSaveDraft({ title: "", notes: null, logs: "" });
+      setClassificationSelected("");
+      setCodeBlockText("");
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["analytics-data"],
+          refetchType: "active",
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["logs"],
+          refetchType: "active",
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["collections"],
+          refetchType: "active",
+        }),
+      ]);
+    },
+    onError: (err: Error) => {
+      toast.error("Failed to publish entry", { description: err.message });
     },
   });
   const [saveDraft, setSaveDraft] = useState<Draft>({
@@ -97,21 +118,8 @@ export default function NewEntryForm() {
       language: languageSelected,
     };
 
-    const addNewEntryPromise = addNewEntry(data);
-    toast.promise(addNewEntryPromise, {
-      loading: "Publishing entry...",
-      success: "Entry published successfully!",
-      error: "Failed to publish entry",
-    });
-
-    await addNewEntryPromise;
-
-    await Promise.all([
-      queryClient.invalidateQueries({
-        queryKey: ["analytics-data"],
-        refetchType: "active",
-      }),
-    ]);
+    console.log("data to submit client", data);
+    await addNewEntry(data);
   }
 
   return (

@@ -1,6 +1,4 @@
 "use server";
-
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import z from "zod";
 import { auth } from "@/lib/auth";
@@ -20,6 +18,7 @@ export async function createEntry(data: {
   language: string;
   notes: string | null;
   logs: string;
+  collectionId?: string;
 }) {
   if (!data) {
     return { message: "", error: undefined };
@@ -30,8 +29,9 @@ export async function createEntry(data: {
   const language = data.language;
   const notes = data.notes;
   const logs = data.logs;
+  const collectionId = data.collectionId;
 
-  console.log("data", {
+  console.log("data to submit", {
     title,
     classification,
     language,
@@ -95,6 +95,13 @@ export async function createEntry(data: {
             id: parseInt(result.data.classification, 10),
           },
         },
+        collection: collectionId
+          ? {
+              connect: {
+                id: parseInt(collectionId, 10),
+              },
+            }
+          : undefined,
         language: {
           connect: {
             name: result.data.language,
@@ -104,12 +111,12 @@ export async function createEntry(data: {
     });
 
     console.log("LOGS", logs);
+
+    return { message: "Entry successfully created!" };
   } catch (error) {
     // Prisma throws a "P2025" error if a record to connect isn't found
     return { error: "Classification or Language not found." };
   }
-
-  return { message: "Entry successfully created!" };
 }
 
 export async function editNewEntry(id: number, data: dataCreateEntry) {
@@ -202,5 +209,109 @@ export async function deleteLog(id: number) {
     console.log("LOGS", log);
   } catch (error) {
     return { error: "Failed to delete log" };
+  }
+}
+
+export async function createCollection(name: string) {
+  const result = z
+    .string()
+    .min(3, "Collection name must be at least 3 characters")
+    .safeParse(name);
+
+  if (!result.success) {
+    return { error: result.error.issues[0].message };
+  }
+
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    return { error: "User not found" };
+  }
+
+  const newcollection = await prisma.collections.create({
+    data: {
+      name: result.data,
+      user: {
+        connect: {
+          id: session.user.id,
+        },
+      },
+    },
+  });
+
+  if (!newcollection) {
+    return { error: "Failed to create collection" };
+  }
+
+  return { message: "Collection created successfully" };
+}
+
+export async function getLogsByCollectionId(collectionId: number) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    return { error: "User not found" };
+  }
+
+  if (!collectionId) {
+    return { error: "Invalid ID" };
+  }
+
+  try {
+    const logs = await prisma.logs.findMany({
+      where: {
+        collectionId: collectionId,
+        userId: session.user.id,
+      },
+      include: {
+        language: true,
+        classification: true,
+        collection: true,
+      },
+    });
+
+    console.log("LOGS", logs);
+    return logs;
+  } catch (error) {
+    return { error: "Failed to get logs" };
+  }
+}
+
+export async function editCollection(data: {
+  name: string;
+  collectionId: string;
+}) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    return { error: "User not found" };
+  }
+
+  if (!data.collectionId) {
+    return { error: "Invalid Collection ID" };
+  }
+
+  try {
+    const collection = await prisma.collections.update({
+      where: {
+        id: parseInt(data.collectionId),
+        userId: session.user.id,
+      },
+      data: {
+        name: data.name,
+      },
+    });
+
+    if (collection.id) {
+      return { message: "Collection updated successfully" };
+    }
+  } catch (error) {
+    return { error: "Failed to update collection" };
   }
 }

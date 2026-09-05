@@ -20,12 +20,6 @@ import {
 } from "@/components/ui/select";
 import { bundledLanguages } from "shiki/bundle/web";
 import type { BundledLanguage } from "shiki/bundle/web";
-import {
-  Alert,
-  AlertAction,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getLogById } from "@/actions/data";
@@ -125,9 +119,9 @@ export default function EditForm({ id }: { id: string }) {
 
     const addNewEntryPromise = updateEntry(data);
     toast.promise(addNewEntryPromise, {
-      loading: "Publishing entry...",
-      success: "Entry published successfully!",
-      error: "Failed to publish entry",
+      loading: "Saving entry...",
+      success: "Entry saved successfully!",
+      error: "Failed to save entry",
     });
 
     await addNewEntryPromise;
@@ -174,7 +168,7 @@ export default function EditForm({ id }: { id: string }) {
             disabled={isPending}
             className="bg-primary text-black cursor-pointer font-medium px-4 text-nowrap py-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span>{isPending ? "Publishing..." : "Publish Log"}</span>
+            <span>{isPending ? "Saving..." : "Save Log"}</span>
           </button>
         </div>
       </div>
@@ -291,7 +285,6 @@ export default function EditForm({ id }: { id: string }) {
                 <div className="space-y-2">
                   <h2 className="font-display font-bold text-xl">Logs here</h2>
                 </div>
-
                 <Select
                   onValueChange={(val) =>
                     setLanguageSelected(val as BundledLanguage)

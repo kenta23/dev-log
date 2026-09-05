@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createHighlighter } from "shiki";
+import { ParamValue } from "next/dist/server/request/params";
 
 export async function getLanguages() {
   //session checker
@@ -44,6 +45,33 @@ export async function getAllLogs() {
     redirect("/login");
   }
 
+  // const collection = await prisma.collections.findFirst({
+  //   where: {
+  //     userId: session.user.id,
+  //   },
+  //   include: {
+  //     logs: {
+  //       include: {
+  //         classification: {
+  //           select: {
+  //             id: true,
+  //             name: true,
+  //           },
+  //         },
+  //         language: {
+  //           select: {
+  //             id: true,
+  //             name: true,
+  //           },
+  //         },
+  //       },
+  //     },
+  //   },
+  //   orderBy: {
+  //     createdAt: "desc",
+  //   },
+  // });
+
   const logs = await prisma.logs.findMany({
     where: {
       userId: session.user.id,
@@ -71,15 +99,18 @@ export async function getAllLogs() {
 
   //modified logs to include code tokens using shiki
   const newLogs = await Promise.all(
-    logs.map(async (log) => {
-      const tokens = await getCodeTokens(log.language.name, log.codes);
-      return {
-        ...log,
-        codes: tokens,
-      };
-    }),
+    logs.length
+      ? logs.map(async (log) => {
+          const tokens = await getCodeTokens(log.language.name, log.codes);
+          return {
+            ...log,
+            codes: tokens,
+          };
+        })
+      : [],
   );
 
+  console.log("data", newLogs);
   return newLogs;
 }
 
@@ -216,7 +247,7 @@ export async function getLogById(id: number) {
   const data = await prisma.logs.findFirst({
     where: {
       id,
-      userId: session?.user.id,
+      userId: session.user.id,
     },
     include: {
       classification: {
@@ -237,6 +268,28 @@ export async function getLogById(id: number) {
   if (!data) {
     throw new Error("Log not found");
   }
+
+  return data;
+}
+
+export async function getCollections() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    redirect("/login");
+  }
+
+  const data = await prisma.collections.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    include: {
+      _count: {
+        select: { logs: true },
+      },
+    },
+  });
 
   return data;
 }

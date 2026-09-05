@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -27,6 +28,19 @@ export async function signupUser(prevState: unknown, formData: FormData) {
     if (!data?.user) {
       return { error: "User not found" };
     }
+
+    //create default collection for a single user
+    await prisma.collections
+      .create({
+        data: {
+          name: "collection1",
+          userId: data.user.id,
+        },
+      })
+      .catch((error) => {
+        console.error("Error creating collection:", error);
+        return { error: "Failed to create collection" };
+      });
   } catch (error: any) {
     return { error: error.message || "Failed to sign up" };
   }

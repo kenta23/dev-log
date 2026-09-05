@@ -5,7 +5,7 @@ import * as React from "react";
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { CollectionSwitcher } from "@/components/collection-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -20,8 +20,11 @@ import {
   PlusCircleIcon,
   ChartBarIcon,
   PlusSquareIcon,
+  Folders,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getCollections } from "@/actions/data";
 
 // This is sample data.
 
@@ -33,7 +36,6 @@ interface SidebarItem {
   brand: {
     name: string;
     logo: React.ReactNode;
-    plan: string;
   }[];
 }
 
@@ -45,7 +47,6 @@ const data: {
     {
       name: "Dev Log",
       logo: <TerminalSquareIcon />,
-      plan: "Free",
     },
   ],
   navMain: [
@@ -55,10 +56,9 @@ const data: {
       icon: <TerminalSquareIcon />,
       isActive: true,
     },
-
     {
       title: "New Entry",
-      url: "/new-entry",
+      url: "/new-entry/[collectionId]",
       icon: <PlusSquareIcon />,
       isActive: false,
     },
@@ -79,19 +79,61 @@ const user = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathName = usePathname();
+  const params = useParams<{ collectionId?: string }>();
 
-  const dataWithActiveStates = data.navMain.map((item) => ({
-    ...item,
-    isActive: item.url === pathName,
-  }));
+  // const dataWithActiveStates = data.navMain.map((item) => ({
+  //   ...item,
+  //   isActive: item.url === pathName,
+  // }));
+
+  // Fetch collections (shares the TanStack Query cache with CollectionSwitcher)
+  const { data: collections } = useQuery({
+    queryKey: ["collections"],
+    queryFn: async () => await getCollections(),
+  });
+
+  // 1. Get current collectionId from URL params, or fallback to the first available collection
+  const activeCollectionId = params?.collectionId;
+
+  // 2. Build the dynamic new entry URL
+  const newEntryUrl = activeCollectionId
+    ? `/collections/new-entry/${activeCollectionId}`
+    : "/new-entry";
+
+  const navMainItems = [
+    {
+      title: "Dashboard",
+      url: `/dashboard`,
+      icon: <TerminalSquareIcon />,
+      isActive: pathName === "/" || pathName === `/dashboard`,
+    },
+    {
+      title: "New Entry",
+      url: newEntryUrl,
+      icon: <PlusSquareIcon />,
+      isActive: pathName.includes("/new-entry"),
+    },
+    {
+      title: "Collections",
+      url: "/collections",
+      icon: <Folders />,
+      isActive: pathName === "/collections",
+    },
+    {
+      title: "Analytics",
+      url: "/analytics",
+      icon: <ChartBarIcon />,
+      isActive: pathName === "/analytics",
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.brand} />
+        <CollectionSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={dataWithActiveStates} />
+        <NavMain items={navMainItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
