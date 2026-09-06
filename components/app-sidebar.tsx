@@ -25,60 +25,12 @@ import {
 import { useParams, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getCollections } from "@/actions/data";
-
-// This is sample data.
-
-interface SidebarItem {
-  title: string;
-  url: string;
-  icon: React.ReactNode;
-  isActive?: boolean;
-  brand: {
-    name: string;
-    logo: React.ReactNode;
-  }[];
-}
-
-const data: {
-  brand: SidebarItem["brand"];
-  navMain: Omit<SidebarItem, "brand">[];
-} = {
-  brand: [
-    {
-      name: "Dev Log",
-      logo: <TerminalSquareIcon />,
-    },
-  ],
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/",
-      icon: <TerminalSquareIcon />,
-      isActive: true,
-    },
-    {
-      title: "New Entry",
-      url: "/new-entry/[collectionId]",
-      icon: <PlusSquareIcon />,
-      isActive: false,
-    },
-    {
-      title: "Analytics",
-      url: "/analytics",
-      icon: <ChartBarIcon />,
-      isActive: false,
-    },
-  ],
-};
-
-const user = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  avatar: "https://github.com/shadcn.png",
-};
+import { useSession } from "@/lib/auth-client";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathName = usePathname();
+  const { data: sessionData } = useSession();
+  const authUser = sessionData?.user ?? null;
   const params = useParams<{ collectionId?: string }>();
 
   // const dataWithActiveStates = data.navMain.map((item) => ({
@@ -136,7 +88,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={navMainItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={authUser} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

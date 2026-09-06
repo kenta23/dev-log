@@ -206,7 +206,7 @@ export async function contributionsData() {
   // Group by YYYY-MM-DD and sum counts
   const countByDate = logs.reduce((acc: Record<string, number>, log) => {
     const dateStr = log.createdAt.toISOString().split("T")[0];
-    acc[dateStr] = (acc[dateStr] ?? 0) + 1;
+    acc[dateStr as string] = (acc[dateStr as string] ?? 0) + 1;
     return acc;
   }, {});
 
