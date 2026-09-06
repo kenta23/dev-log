@@ -37,7 +37,7 @@ import { createCollection } from "@/actions/entries";
 import { getCollections } from "@/actions/data";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 
 export function CollectionSwitcher() {
   const { isMobile } = useSidebar();

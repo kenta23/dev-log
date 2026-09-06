@@ -54,7 +54,7 @@ type logsData =
   | undefined
   | { error: string };
 
-export default function LogsItem({ data }: { data: logsData }) {
+export default function LogsItem({ logs }: { logs: logsData }) {
   const [showMore, setShowMore] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation({
@@ -81,9 +81,9 @@ export default function LogsItem({ data }: { data: logsData }) {
 
   return (
     <>
-      {Array.isArray(data) && data.length > 0 ? (
+      {Array.isArray(logs) && logs.length > 0 ? (
         <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {data?.map((item) => (
+          {logs?.map((item) => (
             <div
               key={item.id}
               className="aspect-video flex flex-col h-auto  items-center justify-start py-6 rounded-xl bg-muted/50"

@@ -13,7 +13,7 @@ export default async function page({
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <LogsItem data={logsByCollectionId} />
+        <LogsItem logs={logsByCollectionId} />
       </div>
     </div>
   );
